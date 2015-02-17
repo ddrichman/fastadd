@@ -37,7 +37,6 @@ int main() {
     float total = 0.;
 
     __m256 partial_sums;
-    __m256 curr_val;
     
     // make sure partial_sums starts at 0
     partial_sums = _mm256_xor_ps(partial_sums, partial_sums);
@@ -46,7 +45,7 @@ int main() {
     auto start = std::chrono::steady_clock::now();
     
     for (long j = 0; j < QTY; j+= 8) {
-        partial_sums = _mm256_add_ps(partial_sums, * (__m256*) (nums + j));
+        partial_sums = _mm256_add_ps(partial_sums, * (__m256 *) (nums + j));
     }
     
     auto end = std::chrono::steady_clock::now();
@@ -68,4 +67,16 @@ int main() {
     auto elapsed = end - start;
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     cout << "time taken (sec): " << (double) nanoseconds * 1e-9 << endl;
+    
+    
+    // Now we compute the correct answer using double-precision. 
+    // On my machine it's about 5.0 * 10^8, which makes sense, since we have
+    // 10^9 random numbers with a uniform distribution centered about 0.5. 
+    // The error from 32-bit fp is substantial if we add stupidly. 
+    double real_ans = 0;
+    
+    for (long j = 0; j < QTY; j++)
+        real_ans += nums[j];
+    
+    cout << real_ans << endl;
 }
